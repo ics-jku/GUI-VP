@@ -11,6 +11,7 @@
 #include "mmu.h"
 #include "platform/common/slip.h"
 #include "platform/common/uart.h"
+#include "platform/common/sifive_test.h"
 #include "prci.h"
 #include "syscall.h"
 #include "debug.h"
@@ -73,6 +74,8 @@ public:
 	addr_t plic_end_addr = 0x10000000;
 	addr_t prci_start_addr = 0x10000000;
 	addr_t prci_end_addr = 0x1000FFFF;
+	addr_t sifive_test_start_addr = 0x100000;
+	addr_t sifive_test_end_addr = 0x100fff;
 
 	OptionValue<unsigned long> entry_point;
 	std::string dtb_file;
@@ -135,13 +138,14 @@ int sc_main(int argc, char **argv) {
 	SimpleMemory mem("SimpleMemory", opt.mem_size);
 	SimpleMemory dtb_rom("DBT_ROM", opt.dtb_rom_size);
 	ELFLoader loader(opt.input_program.c_str());
-	SimpleBus<NUM_CORES + 1, 8> bus("SimpleBus");
+	SimpleBus<NUM_CORES + 1, 9> bus("SimpleBus");
 	SyscallHandler sys("SyscallHandler");
 	FU540_PLIC plic("PLIC", NUM_CORES);
 	CLINT<NUM_CORES> clint("CLINT");
 	PRCI prci("PRCI");
 	UART uart0("UART0", 3);
 	SLIP slip("SLIP", 4, opt.tun_device);
+	SIFIVE_Test sifive_test("SIFIVE_Test");
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
 
@@ -179,6 +183,7 @@ int sc_main(int argc, char **argv) {
 	bus.ports[5] = new PortMapping(opt.uart1_start_addr, opt.uart1_end_addr);
 	bus.ports[6] = new PortMapping(opt.plic_start_addr, opt.plic_end_addr);
 	bus.ports[7] = new PortMapping(opt.prci_start_addr, opt.prci_end_addr);
+	bus.ports[8] = new PortMapping(opt.sifive_test_start_addr, opt.sifive_test_end_addr);
 
 	// connect TLM sockets
 	for (size_t i = 0; i < NUM_CORES; i++) {
@@ -193,6 +198,7 @@ int sc_main(int argc, char **argv) {
 	bus.isocks[5].bind(slip.tsock);
 	bus.isocks[6].bind(plic.tsock);
 	bus.isocks[7].bind(prci.tsock);
+	bus.isocks[8].bind(sifive_test.tsock);
 
 	// connect interrupt signals/communication
 	for (size_t i = 0; i < NUM_CORES; i++) {
