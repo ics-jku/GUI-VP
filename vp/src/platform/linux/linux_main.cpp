@@ -13,6 +13,7 @@
 #include "platform/common/slip.h"
 #include "platform/common/uart.h"
 #include "platform/common/sifive_test.h"
+#include "platform/common/vncsimplefb.h"
 #include "prci.h"
 #include "syscall.h"
 #include "debug.h"
@@ -77,6 +78,8 @@ public:
 	addr_t prci_end_addr = 0x1000FFFF;
 	addr_t sifive_test_start_addr = 0x100000;
 	addr_t sifive_test_end_addr = 0x100fff;
+	addr_t vncsimplefb_start_addr = 0x11000000;
+	addr_t vncsimplefb_end_addr =   0x11ffffff; /* 16MiB */
 
 	OptionValue<unsigned long> entry_point;
 	std::string dtb_file;
@@ -139,7 +142,7 @@ int sc_main(int argc, char **argv) {
 	SimpleMemory mem("SimpleMemory", opt.mem_size);
 	SimpleMemory dtb_rom("DBT_ROM", opt.dtb_rom_size);
 	ELFLoader loader(opt.input_program.c_str());
-	SimpleBus<NUM_CORES + 1, 9> bus("SimpleBus");
+	SimpleBus<NUM_CORES + 1, 10> bus("SimpleBus");
 	SyscallHandler sys("SyscallHandler");
 	FU540_PLIC plic("PLIC", NUM_CORES);
 	LWRT_CLINT<NUM_CORES> clint("CLINT");
@@ -147,6 +150,7 @@ int sc_main(int argc, char **argv) {
 	UART uart0("UART0", 3);
 	SLIP slip("SLIP", 4, opt.tun_device);
 	SIFIVE_Test sifive_test("SIFIVE_Test");
+	VNCSimpleFB vncsimplefb("VNCSimpleFB");
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
 
@@ -185,6 +189,7 @@ int sc_main(int argc, char **argv) {
 	bus.ports[6] = new PortMapping(opt.plic_start_addr, opt.plic_end_addr);
 	bus.ports[7] = new PortMapping(opt.prci_start_addr, opt.prci_end_addr);
 	bus.ports[8] = new PortMapping(opt.sifive_test_start_addr, opt.sifive_test_end_addr);
+	bus.ports[9] = new PortMapping(opt.vncsimplefb_start_addr, opt.vncsimplefb_end_addr);
 
 	// connect TLM sockets
 	for (size_t i = 0; i < NUM_CORES; i++) {
@@ -200,6 +205,7 @@ int sc_main(int argc, char **argv) {
 	bus.isocks[6].bind(plic.tsock);
 	bus.isocks[7].bind(prci.tsock);
 	bus.isocks[8].bind(sifive_test.tsock);
+	bus.isocks[9].bind(vncsimplefb.tsock);
 
 	// connect interrupt signals/communication
 	for (size_t i = 0; i < NUM_CORES; i++) {
