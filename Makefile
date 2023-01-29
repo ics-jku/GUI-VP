@@ -9,6 +9,12 @@ ifeq ($(USE_SYSTEM_SYSTEMC),ON)
 else
 	SYSTEMC_DEPENDENCY = vp/dependencies/systemc-dist
 endif
+RELEASE_BUILD ?= OFF
+ifeq ($(RELEASE_BUILD),ON)
+	CMAKE_BUILD_TYPE = Release
+else
+	CMAKE_BUILD_TYPE = Debug
+endif
 
 vps: vp/src/core/common/gdb-mc/libgdb/mpc/mpc.c $(SYSTEMC_DEPENDENCY) vp/dependencies/softfloat-dist vp/build/Makefile
 	$(MAKE) install -C vp/build
@@ -26,15 +32,15 @@ all: vps vp-display
 
 vp/build/Makefile:
 	mkdir -p vp/build
-	cd vp/build && cmake -DUSE_SYSTEM_SYSTEMC=$(USE_SYSTEM_SYSTEMC) ..
+	cd vp/build && cmake -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) -DUSE_SYSTEM_SYSTEMC=$(USE_SYSTEM_SYSTEMC) ..
 
 vp-eclipse:
 	mkdir -p vp-eclipse
-	cd vp-eclipse && cmake ../vp/ -G "Eclipse CDT4 - Unix Makefiles"
+	cd vp-eclipse && cmake -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) ../vp/ -G "Eclipse CDT4 - Unix Makefiles"
 
 env/basic/vp-display/build/Makefile:
 	mkdir -p env/basic/vp-display/build
-	cd env/basic/vp-display/build && cmake ..
+	cd env/basic/vp-display/build && cmake -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) ..
 
 vp-display: env/basic/vp-display/build/Makefile
 	$(MAKE) -C env/basic/vp-display/build
