@@ -17,6 +17,7 @@
 #include "prci.h"
 #include "syscall.h"
 #include "debug.h"
+#include "util/vncserver.h"
 #include "util/options.h"
 #include "platform/common/options.h"
 
@@ -139,6 +140,8 @@ int sc_main(int argc, char **argv) {
 
 	tlm::tlm_global_quantum::instance().set(sc_core::sc_time(opt.tlm_global_quantum, sc_core::SC_NS));
 
+	VNCServer vncServer;
+
 	SimpleMemory mem("SimpleMemory", opt.mem_size);
 	SimpleMemory dtb_rom("DBT_ROM", opt.dtb_rom_size);
 	ELFLoader loader(opt.input_program.c_str());
@@ -150,7 +153,7 @@ int sc_main(int argc, char **argv) {
 	UART uart0("UART0", 3);
 	SLIP slip("SLIP", 4, opt.tun_device);
 	SIFIVE_Test sifive_test("SIFIVE_Test");
-	VNCSimpleFB vncsimplefb("VNCSimpleFB");
+	VNCSimpleFB vncsimplefb("VNCSimpleFB", vncServer);
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
 
