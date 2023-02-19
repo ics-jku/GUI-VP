@@ -13,8 +13,13 @@ public:
 
 class VNCServer {
 public:
-	VNCServer(void);
-	~VNCServer(void);
+	VNCServer(const char *desktopName) : desktopName(desktopName),
+	width(0), height(0), bitsPerSample(0), samplesPerPixel(0),
+	bytesPerPixel(0), vncInput(nullptr) {}
+
+	~VNCServer(void) {
+		stop();
+	}
 
 	bool start(void);
 	void stop(void);
@@ -65,6 +70,7 @@ public:
 	void doKbd(rfbClientPtr cl, rfbBool down, rfbKeySym key);
 
 private:
+	const char *desktopName;
 	int width, height, bitsPerSample, samplesPerPixel, bytesPerPixel;
 	rfbScreenInfoPtr rfbScreen;
 	VNCInput_if *vncInput;
