@@ -198,9 +198,11 @@ struct ISS : public external_interrupt_target, public clint_interrupt_target, pu
 
 	void clear_external_interrupt(PrivilegeLevel level) override;
 
-	void trigger_timer_interrupt(bool status) override;
+	void trigger_timer_interrupt() override;
+	void clear_timer_interrupt() override;
 
-	void trigger_software_interrupt(bool status) override;
+	void trigger_software_interrupt() override;
+	void clear_software_interrupt() override;
 
 	void sys_exit() override;
 
