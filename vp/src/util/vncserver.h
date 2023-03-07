@@ -4,18 +4,22 @@
 #include <stdint.h>
 #include <rfb/rfb.h>
 
-class VNCInput_if {
+class VNCInputPtr_if {
 public:
-	/* callbacks */
 	virtual void doPtr(int buttonMask, int x, int y) = 0;
+};
+
+class VNCInputKbd_if {
+public:
 	virtual void doKbd(rfbBool down, rfbKeySym key) = 0;
 };
+
 
 class VNCServer {
 public:
 	VNCServer(const char *desktopName) : desktopName(desktopName),
 	width(0), height(0), bitsPerSample(0), samplesPerPixel(0),
-	bytesPerPixel(0), vncInput(nullptr) {}
+	bytesPerPixel(0), vncInputPtr(nullptr), vncInputKbd(nullptr) {}
 
 	~VNCServer(void) {
 		stop();
@@ -42,8 +46,12 @@ public:
 		return height;
 	}
 
-	inline void setVNCInput(VNCInput_if *vncInput) {
-		this->vncInput = vncInput;
+	inline void setVNCInputPtr(VNCInputPtr_if *vncInputPtr) {
+		this->vncInputPtr = vncInputPtr;
+	}
+
+	inline void setVNCInputKbd(VNCInputKbd_if *vncInputKbd) {
+		this->vncInputKbd = vncInputKbd;
 	}
 
 	inline rfbScreenInfoPtr getScreen(void) {
@@ -73,7 +81,8 @@ private:
 	const char *desktopName;
 	int width, height, bitsPerSample, samplesPerPixel, bytesPerPixel;
 	rfbScreenInfoPtr rfbScreen;
-	VNCInput_if *vncInput;
+	VNCInputPtr_if *vncInputPtr;
+	VNCInputKbd_if *vncInputKbd;
 };
 
 #endif  /* RISCV_VP_VNCSERVER_H */
