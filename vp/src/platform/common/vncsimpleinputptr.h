@@ -1,5 +1,5 @@
-#ifndef RISCV_VP_VNCSIMPLEPTRINPUT_H
-#define RISCV_VP_VNCSIMPLEPTRINPUT_H
+#ifndef RISCV_VP_VNCSIMPLEINPUTPTR_H
+#define RISCV_VP_VNCSIMPLEINPUTPTR_H
 
 #include "util/vncserver.h"
 
@@ -15,13 +15,13 @@
 /*
  * Simple ptr (mouse) input module
  */
-class VNCSimplePtrInput : public sc_core::sc_module, public VNCInputPtr_if {
+class VNCSimpleInputPtr : public sc_core::sc_module, public VNCInputPtr_if {
 public:
-	tlm_utils::simple_target_socket<VNCSimplePtrInput> tsock;
+	tlm_utils::simple_target_socket<VNCSimpleInputPtr> tsock;
 
-	VNCSimplePtrInput(sc_core::sc_module_name, VNCServer& vncServer, uint32_t irq);
+	VNCSimpleInputPtr(sc_core::sc_module_name, VNCServer& vncServer, uint32_t irq);
 
-	SC_HAS_PROCESS(VNCSimplePtrInput);
+	SC_HAS_PROCESS(VNCSimpleInputPtr);
 
 	/* callback (VNCInputPtr_if) */
 	void doPtr(int buttonMask, int x, int y);
@@ -48,7 +48,7 @@ private:
 
 	void updateProcess();
 
-	vp::map::LocalRouter router = {"VNCSimplePtrInput"};
+	vp::map::LocalRouter router = {"VNCSimpleInputPtr"};
 };
 
-#endif  /* RISCV_VP_VNCSIMPLEPTRINPUT_H */
+#endif  /* RISCV_VP_VNCSIMPLEINPUTPTR_H */
