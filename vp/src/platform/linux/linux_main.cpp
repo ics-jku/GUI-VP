@@ -97,11 +97,16 @@ public:
 	addr_t mram_root_start_addr = 0x40000000;
 	addr_t mram_root_size = 1024u * 1024u * (unsigned int)(MRAM_SIZE_MB);
 	addr_t mram_root_end_addr = mram_root_start_addr + mram_root_size - 1;
+	addr_t mram_data_start_addr = 0x60000000;
+	addr_t mram_data_size = 1024u * 1024u * (unsigned int)(MRAM_SIZE_MB);
+	addr_t mram_data_end_addr = mram_data_start_addr + mram_data_size - 1;
+
 
 	OptionValue<unsigned long> entry_point;
 	std::string dtb_file;
 	std::string tun_device = "tun0";
 	std::string mram_root_image;
+	std::string mram_data_image;
 
 	LinuxOptions(void) {
         	// clang-format off
@@ -112,7 +117,9 @@ public:
 			("dtb-file", po::value<std::string>(&dtb_file)->required(), "dtb file for boot loading")
 			("tun-device", po::value<std::string>(&tun_device), "tun device used by SLIP")
 			("mram-root-image", po::value<std::string>(&mram_root_image)->default_value(""),"MRAM root image file")
-			("mram-root-image-size", po::value<unsigned int>(&mram_root_size), "MRAM root image size");
+			("mram-root-image-size", po::value<unsigned int>(&mram_root_size), "MRAM root image size")
+			("mram-data-image", po::value<std::string>(&mram_data_image)->default_value(""),"MRAM data image file for persistency")
+			("mram-data-image-size", po::value<unsigned int>(&mram_data_size), "MRAM data image size");
         	// clang-format on
 	}
 
@@ -121,7 +128,9 @@ public:
 		entry_point.finalize(parse_ulong_option);
 		mem_end_addr = mem_start_addr + mem_size - 1;
 		mram_root_end_addr = mram_root_start_addr + mram_root_size - 1;
-		assert(mram_root_end_addr < mem_start_addr && "MRAM for root too big, would overlap memory");
+		assert(mram_root_end_addr < mram_data_start_addr && "MRAM root too big, would overlap MRAM root");
+		mram_data_end_addr = mram_data_start_addr + mram_data_size - 1;
+		assert(mram_data_end_addr < mem_start_addr && "MRAM too big, would overlap memory");
 	}
 };
 
@@ -166,7 +175,7 @@ int sc_main(int argc, char **argv) {
 	SimpleMemory mem("SimpleMemory", opt.mem_size);
 	SimpleMemory dtb_rom("DBT_ROM", opt.dtb_rom_size);
 	ELFLoader loader(opt.input_program.c_str());
-	SimpleBus<NUM_CORES + 1, 13> bus("SimpleBus");
+	SimpleBus<NUM_CORES + 1, 14> bus("SimpleBus");
 	SyscallHandler sys("SyscallHandler");
 	FU540_PLIC plic("PLIC", NUM_CORES);
 	LWRT_CLINT<NUM_CORES> clint("CLINT");
@@ -180,6 +189,7 @@ int sc_main(int argc, char **argv) {
 	DebugMemoryInterface dbg_if("DebugMemoryInterface");
 	MemoryDMI dmi = MemoryDMI::create_start_size_mapping(mem.data, opt.mem_start_addr, mem.size);
 	MemoryMappedFile mramRoot("MRAM_Root", opt.mram_root_image, opt.mram_root_size);
+	MemoryMappedFile mramData("MRAM_Data", opt.mram_data_image, opt.mram_data_size);
 
 	Core *cores[NUM_CORES];
 	for (unsigned i = 0; i < NUM_CORES; i++) {
@@ -220,6 +230,7 @@ int sc_main(int argc, char **argv) {
 	bus.ports[10] = new PortMapping(opt.vncsimpleinputptr_start_addr, opt.vncsimpleinputptr_end_addr);
 	bus.ports[11] = new PortMapping(opt.vncsimpleinputkbd_start_addr, opt.vncsimpleinputkbd_end_addr);
 	bus.ports[12] = new PortMapping(opt.mram_root_start_addr, opt.mram_root_end_addr);
+	bus.ports[13] = new PortMapping(opt.mram_data_start_addr, opt.mram_data_end_addr);
 
 	// connect TLM sockets
 	for (size_t i = 0; i < NUM_CORES; i++) {
@@ -239,6 +250,7 @@ int sc_main(int argc, char **argv) {
 	bus.isocks[10].bind(vncsimpleinputptr.tsock);
 	bus.isocks[11].bind(vncsimpleinputkbd.tsock);
 	bus.isocks[12].bind(mramRoot.tsock);
+	bus.isocks[13].bind(mramData.tsock);
 
 	// connect interrupt signals/communication
 	for (size_t i = 0; i < NUM_CORES; i++) {
