@@ -1,3 +1,17 @@
+[![RISC-V VP++ logo](https://raw.githubusercontent.com/ics-jku/riscv-vp-plusplus/master/doc/logo/preview/riscv_vp_plusplus_logo_name.png)](https://github.com/ics-jku/riscv-vp-plusplus)
+
+> [!IMPORTANT]
+> **This repository is obsolete and no longer maintained!**
+>
+> In 2023, *GUI-VP* was fully integrated into **[RISC-V VP++](https://github.com/ics-jku/riscv-vp-plusplus)**.
+> Since then, all further development of *GUI-VP* takes place there.
+> Please use *RISC-V VP++* instead – detailed information on the *GUI-VP* features can be found in the
+> [RISC-V VP++ GUI-VP documentation](https://github.com/ics-jku/riscv-vp-plusplus/blob/master/doc/GUI-VP/README.md).
+>
+> [GUI-VP Kit](https://github.com/ics-jku/GUI-VP_Kit) also uses *RISC-V VP++* and provides an easy-to-use build system and experimentation platform for *RISC-V VP++* and Linux.
+
+---
+
 # GUI-VP -- RISC-V based Virtual Prototype (VP) for graphical application development
 
 *GUI-VP* is a greatly extended and improved open-source [RISC-V VP](https://github.com/agra-uni-bremen/riscv-vp) that enables the simulation of interactive graphical Linux applications.
