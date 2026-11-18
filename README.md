@@ -5,8 +5,7 @@
 >
 > In 2023, *GUI-VP* was fully integrated into **[RISC-V VP++](https://github.com/ics-jku/riscv-vp-plusplus)**.
 > Since then, all further development of *GUI-VP* takes place there.
-> Please use *RISC-V VP++* instead – detailed information on the *GUI-VP* features can be found in the
-> [RISC-V VP++ GUI-VP documentation](https://github.com/ics-jku/riscv-vp-plusplus/blob/master/doc/GUI-VP/README.md).
+> Please use *RISC-V VP++* instead.
 >
 > [GUI-VP Kit](https://github.com/ics-jku/GUI-VP_Kit) also uses *RISC-V VP++* and provides an easy-to-use build system and experimentation platform for *RISC-V VP++* and Linux.
 
